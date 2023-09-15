@@ -109,13 +109,19 @@ int main() {
     }
 
     // Add tasks to the queue (replace with your UI code)
-    Task task1{"Task 1", "image1.jpg", "Filter 1"};
-    Task task2{"Task 2", "image2.jpg", "Filter 2"};
+    Task task1{"Task 1", "xd.png", "Negative"};
+    Task task1{"Task 2", "xd.png", "Grayscale"};
+    Task task2{"Task 3", "xd.png", "Sepia"};
+    Task task1{"Task 4", "xd.png", "Cartoon"};
+    Task task2{"Task 5", "xd.png", "HistogramEqualization"};
 
     // Lock the queue_mutex and add tasks to the queue
     pthread_mutex_lock(&queue_mutex);
     task_queue.push_back(task1);
     task_queue.push_back(task2);
+    task_queue.push_back(task3);
+    task_queue.push_back(task4);
+    task_queue.push_back(task5);
     pthread_mutex_unlock(&queue_mutex);
 
     // Signal the worker threads that there are tasks to process
