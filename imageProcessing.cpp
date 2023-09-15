@@ -56,8 +56,6 @@ void processImage(Task task) {
     // Save the processed image (you can display it or save it to a file)
     std::string output_filename = "processed_" + task.task_name + ".jpg";
     cv::imwrite(output_filename, image);
-
-    // Print a message indicating the task is complete
     std::cout << "Task '" << task.task_name << "' has completed processing." << std::endl;
 }
 
