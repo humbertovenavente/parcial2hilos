@@ -6,6 +6,8 @@
 #include <vector>
 #include <queue>
 #include <wx/thread.h>
+#include <wx/string.h>
+
 
 // Define a structure to hold information about each task.
 struct Task {
@@ -21,11 +23,36 @@ void processImage(Task task);
 // Worker thread class
 class WorkerThread : public wxThread {
 public:
-    WorkerThread() : wxThread(wxTHREAD_DETACHED) {}
+    WorkerThread() : wxThread(wxTHREAD_JOINABLE), shouldExit(false) {}
+
+    // Destructor to ensure proper thread termination
+    ~WorkerThread() {
+        if (IsRunning()) {
+            Delete(); // This will safely terminate the thread
+        }
+    }
+
+    // Add a setter method for shouldExit
+    void SetShouldExit(bool exit) {
+        wxMutexLocker lock(mutex);
+        shouldExit = exit;
+    }
+
+private:
+    bool shouldExit; // Flag to signal thread to exit gracefully
+    wxMutex mutex; // Mutex for accessing shouldExit
 
 protected:
     wxThread::ExitCode Entry() override {
-        while (!TestDestroy()) {
+        while (true) {
+            // Check if the shouldExit flag is set
+            {
+                wxMutexLocker lock(mutex);
+                if (shouldExit) {
+                    std::cout << "Thread ID: " << wxThread::This()->GetId() << ", shouldExit: " << shouldExit << std::endl;
+                    wxThread::Exit(); // Exit the thread gracefully
+                }
+            }
             Task task;
 
             {
@@ -36,21 +63,30 @@ protected:
                     queue_condition.Wait();
                 }
 
+                if (TestDestroy()) {
+                    std::cout << "Thread ID: " << wxThread::This()->GetId() << ", terminated" << std::endl;
+                    wxThread::Exit(); // Exit the thread if it's terminated
+                }
+
                 if (task_queue.empty()) {
-                    break; // Exit the thread if it's terminated or the queue is empty
+                    continue; // Continue to check the shouldExit flag
                 }
 
                 // Get the task from the queue
                 task = task_queue.front();
                 task_queue.erase(task_queue.begin());
+
+                std::cout << "Task '" << task.task_name << "' entered" << std::endl;
             }
 
+            std::cout << "ready to process" << std::endl;
             // Process the image
             processImage(task);
         }
-
-        return nullptr;
+        std::cout << "Task mainloop exited" << std::endl;
+        wxThread::Exit();
     }
 };
+
 
 #endif // IMAGE_PROCESSING_H

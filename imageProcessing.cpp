@@ -5,6 +5,10 @@
 #include <unistd.h>
 #include <opencv2/opencv.hpp>
 #include "imageProcessing.h"
+#include <chrono>
+#include <thread>
+// Forward declaration of the MyFrame class
+class MyFrame;
 
 void applySepiaFilter(cv::Mat& image) {
     for (int y = 0; y < image.rows; ++y) {
@@ -24,7 +28,8 @@ void applySepiaFilter(cv::Mat& image) {
 void processImage(Task task) {
     // Load the image
     cv::Mat image = cv::imread(task.image_path);
-
+    // Add debugging output
+    std::cout << "Processing task: " << task.task_name << std::endl;
     if (image.empty()) {
         std::cerr << "Error loading image: " << task.image_path << std::endl;
         return;
@@ -56,7 +61,10 @@ void processImage(Task task) {
     }
 
     // Save the processed image (you can display it or save it to a file)
-    std::string output_filename = "processed_" + task.task_name + ".jpg";
+    std::string output_filename = "processed_" + task.task_name + ".png";
     cv::imwrite(output_filename, image);
     std::cout << "Task '" << task.task_name << "' has completed processing." << std::endl;
+
+    // Introduce a delay (for demonstration purposes)
+    std::this_thread::sleep_for(std::chrono::seconds(2)); // Adjust the delay duration as needed
 }
